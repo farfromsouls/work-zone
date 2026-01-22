@@ -1,0 +1,14 @@
+{
+    "first": {
+        "volumes": [10, 10, 10, 10],
+        "time": 30
+    },
+    "second": {
+        "volumes": [30, 30, 30, 30],
+        "time": 40
+    },
+    "third": {
+        "volumes": [50, 50, 50, 50],
+        "time": 60
+    }
+}
