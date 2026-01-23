@@ -2,7 +2,7 @@
 chcp 65001 >nul
 
 set PROJECT_PATH=%~dp0
-set SHORTCUT_NAME=Space
+set SHORTCUT_NAME=TimeToWork
 set SCRIPT_NAME=main.pyw
 set VBS_TEMP=%TEMP%\makelink.vbs
 
