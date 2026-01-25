@@ -1,10 +1,10 @@
 {
-    "first": {
-        "volumes": [10, 10, 10, 10],
+    "chill_background": {
+        "volumes": [8, 18, 5, 0],
         "time": 30
     },
-    "second": {
-        "volumes": [30, 30, 30, 30],
+    "nature": {
+        "volumes": [0, 40, 10, 0],
         "time": 40
     },
     "third": {

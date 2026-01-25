@@ -1,15 +1,12 @@
 import os
 import json
-
 import tkinter as tk
 import pygame
-
 from tkinter import ttk
 
 
 class App:
     def __init__(self, root):
-        # main config
         self.root = root
         self.root.title("App")
         self.root.geometry("700x400")  
@@ -24,11 +21,12 @@ class App:
         self.presets = []
         self.volumes = [0,0,0,0]
         self.sliders = []
+        self.tasks = {}
+        self.task_widgets = []
         self.slider_labels = []
         self.volume_names = ["Music", "Rain", "Fire", "Clock"]
         self.__start_sounds()
 
-        # choose presets
         preset_frame = ttk.Frame(main_frame)
         preset_frame.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E), padx=(20, 0), pady=10)
         ttk.Label(preset_frame, text="Preset:", font=('Arial', 10)).pack(anchor=tk.W)
@@ -45,7 +43,6 @@ class App:
         self.preset_dropdown.bind("<<ComboboxSelected>>", 
         lambda event: self.__load_preset(self.preset_dropdown.get()))
 
-        # sliders
         sliders_frame = ttk.Frame(main_frame)
         sliders_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 20))
         for col in range(4):
@@ -72,8 +69,22 @@ class App:
                 text=f"{self.volume_names[col]}"
             )
             button.pack()
+            
+        input_frame = ttk.Frame(preset_frame)
+        input_frame.pack(pady=(10, 0), fill=tk.X)
         
-        # timer progress bar
+        self.text_input = ttk.Entry(input_frame)
+        self.text_input.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        
+        self.add_button = ttk.Button(input_frame, text="Create task", 
+                                     command=self.__create_task)
+        self.add_button.pack(side=tk.RIGHT)
+        
+        self.tasks_frame = ttk.LabelFrame(preset_frame, text="Tasks", padding="10")
+        self.tasks_frame.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
+        
+        self.__update_tasks_display()
+        
         progress_frame = ttk.Frame(main_frame)
         progress_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))
         self.progress_bar = ttk.Progressbar(
@@ -87,11 +98,51 @@ class App:
         self.progress_label = ttk.Label(progress_frame, text="Progress: 50%")
         self.progress_label.pack(pady=(5, 0))
 
-        # loading last preset
         with open("./presets/last_used.txt", "r", encoding="utf-8") as f:
             last_used_preset = f.read()
             self.preset_dropdown.set(last_used_preset)
             self.__load_preset(last_used_preset)
+            
+    def __create_task(self):
+        task_text = self.text_input.get().strip()
+        if task_text:
+            self.tasks[task_text] = False
+            self.text_input.delete(0, tk.END)
+            self.__update_tasks_display()
+    
+    def __update_tasks_display(self):
+        for widget in self.task_widgets:
+            widget.destroy()
+        self.task_widgets.clear()
+        
+        for i, (task_text, task_completed) in enumerate(self.tasks.items()):
+            task_frame = ttk.Frame(self.tasks_frame)
+            task_frame.pack(fill=tk.X, pady=2)
+            
+            check_var = tk.BooleanVar(value=task_completed)
+            
+            check_var.trace_add("write", lambda *args, var=check_var, text=task_text: 
+                                self.tasks.update({text: var.get()}))
+            
+            checkbutton = tk.Checkbutton(
+                task_frame,
+                variable=check_var
+            )
+            checkbutton.pack(side=tk.LEFT, padx=(0, 5))
+            
+            task_label = ttk.Label(task_frame, text=task_text, font=('Arial', 10))
+            task_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+            
+            delete_btn = ttk.Button(task_frame, text="×", width=3,
+                                   command=lambda text=task_text: self.__delete_task(text))
+            delete_btn.pack(side=tk.RIGHT)
+            
+            self.task_widgets.append(task_frame)
+
+    def __delete_task(self, task_text):
+        if task_text in self.tasks:
+            del self.tasks[task_text]
+            self.__update_tasks_display()
 
     def __update_sliders(self):
         for i in range(4):
