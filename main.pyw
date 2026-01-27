@@ -1,4 +1,3 @@
-import os
 import json
 import tkinter as tk
 import pygame
@@ -24,6 +23,7 @@ class App:
         self.tasks = {}
         self.task_widgets = []
         self.slider_labels = []
+        self.time = 0
         self.volume_names = ["Music", "Rain", "Fire", "Clock"]
         self.__start_sounds()
 
@@ -49,7 +49,7 @@ class App:
             sliders_frame.columnconfigure(col, weight=1)
             column_frame = ttk.Frame(sliders_frame)
             column_frame.grid(row=0, column=col, padx=10, pady=10, sticky=(tk.N, tk.S, tk.E, tk.W))
-            value_label = ttk.Label(column_frame, text="50%", font=('Arial', 12))
+            value_label = ttk.Label(column_frame, text=self.volumes[col], font=('Arial', 12))
             value_label.pack(pady=(0, 10))
             self.slider_labels.append(value_label)
             
@@ -97,11 +97,23 @@ class App:
         self.progress_bar.pack(fill=tk.X, expand=True)
         self.progress_label = ttk.Label(progress_frame, text="Progress: 50%")
         self.progress_label.pack(pady=(5, 0))
-
+        
+        timer_frame = ttk.Frame(main_frame)
+        timer_frame.grid(row=1, column=1, sticky=(tk.W, tk.E))
+        
+        timer_button = ttk.Button(timer_frame, text="Start timer", 
+                                     command=self.__start_timer)
+        timer_button.pack(side=tk.RIGHT)
+        timer_label = ttk.Label(timer_frame, text=f"Осталось: {self.time}", font=('Arial', 12))
+        timer_label.pack(pady=(0, 10))
+    
         with open("./presets/last_used.txt", "r", encoding="utf-8") as f:
             last_used_preset = f.read()
             self.preset_dropdown.set(last_used_preset)
             self.__load_preset(last_used_preset)
+            
+    def __start_timer():
+        pass
             
     def __create_task(self):
         task_text = self.text_input.get().strip()
@@ -157,7 +169,7 @@ class App:
                 with open("./presets/last_used.txt", "w", encoding="utf-8") as f:
                     f.write(name)
             except:
-                self.volumes = [50,50,50,50]
+                self.volumes = [0,0,0,0]
 
     def __preset_names(self):
         with open(f"./presets/presets.json", "r", encoding="utf-8") as f:
@@ -184,4 +196,5 @@ class App:
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
+    
     root.mainloop()
