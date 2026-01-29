@@ -25,6 +25,7 @@ class App:
         self.slider_labels = []
         self.time = 0
         self.volume_names = ["Music", "Rain", "Fire", "Clock"]
+        self.progress_percent = 0
         self.__start_sounds()
 
         preset_frame = ttk.Frame(main_frame)
@@ -92,10 +93,10 @@ class App:
             length=400,
             mode='determinate',
             maximum=100,
-            value=50
+            value=self.progress_percent
         )
         self.progress_bar.pack(fill=tk.X, expand=True)
-        self.progress_label = ttk.Label(progress_frame, text="Progress: 50%")
+        self.progress_label = ttk.Label(progress_frame, text=f"Progress: {self.progress_percent}%")
         self.progress_label.pack(pady=(5, 0))
         
         timer_frame = ttk.Frame(main_frame)
@@ -114,6 +115,12 @@ class App:
             
     def __start_timer():
         pass
+    
+    def __update_progressbar(self):
+        done_tasks = [key for key, val in self.tasks.items() if val == True]
+        self.progress_percent = round((len(done_tasks)/len(self.tasks)) * 100, 1)
+        self.progress_bar.config(value=self.progress_percent)
+        self.progress_label.config(text=f"Progress: {self.progress_percent}%")
             
     def __create_task(self):
         task_text = self.text_input.get().strip()
@@ -121,24 +128,23 @@ class App:
             self.tasks[task_text] = False
             self.text_input.delete(0, tk.END)
             self.__update_tasks_display()
+            self.__update_progressbar()
     
     def __update_tasks_display(self):
         for widget in self.task_widgets:
             widget.destroy()
         self.task_widgets.clear()
-        
+
         for i, (task_text, task_completed) in enumerate(self.tasks.items()):
             task_frame = ttk.Frame(self.tasks_frame)
             task_frame.pack(fill=tk.X, pady=2)
             
             check_var = tk.BooleanVar(value=task_completed)
             
-            check_var.trace_add("write", lambda *args, var=check_var, text=task_text: 
-                                self.tasks.update({text: var.get()}))
-            
             checkbutton = tk.Checkbutton(
                 task_frame,
-                variable=check_var
+                variable=check_var,
+                command=lambda var=check_var, text=task_text: self.__on_checkbutton_click(text, var)
             )
             checkbutton.pack(side=tk.LEFT, padx=(0, 5))
             
@@ -146,15 +152,20 @@ class App:
             task_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
             
             delete_btn = ttk.Button(task_frame, text="×", width=3,
-                                   command=lambda text=task_text: self.__delete_task(text))
+                                    command=lambda text=task_text: self.__delete_task(text))
             delete_btn.pack(side=tk.RIGHT)
             
             self.task_widgets.append(task_frame)
 
+    def __on_checkbutton_click(self, task_text: str, check_var: tk.BooleanVar):
+        self.tasks[task_text] = check_var.get()
+        self.__update_progressbar()
+        
     def __delete_task(self, task_text):
         if task_text in self.tasks:
             del self.tasks[task_text]
             self.__update_tasks_display()
+            self.__update_progressbar()
 
     def __update_sliders(self):
         for i in range(4):
